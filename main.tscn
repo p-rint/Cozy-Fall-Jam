@@ -1,0 +1,51 @@
+[gd_scene load_steps=8 format=3 uid="uid://bblxwni0bdx7x"]
+
+[ext_resource type="Script" uid="uid://cbuaqpujn36eq" path="res://player.gd" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://cy0jaqjeo6k57" path="res://cam_pivot.gd" id="2_0xm2m"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0xm2m"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_h2yge"]
+sky_material = SubResource("ProceduralSkyMaterial_0xm2m")
+
+[sub_resource type="Environment" id="Environment_1bvp3"]
+background_mode = 2
+sky = SubResource("Sky_h2yge")
+tonemap_mode = 2
+
+[sub_resource type="BoxMesh" id="BoxMesh_0xm2m"]
+size = Vector3(1, 2, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0xm2m"]
+size = Vector3(1, 2, 1)
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1bvp3")
+
+[node name="Floor" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="CSGBox3D" type="CSGBox3D" parent="Floor"]
+size = Vector3(30, 1, 30)
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.210042, 0)
+script = ExtResource("1_ig7tw")
+
+[node name="Character" type="Node3D" parent="Player"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player/Character"]
+mesh = SubResource("BoxMesh_0xm2m")
+
+[node name="CamPivot" type="Node3D" parent="Player"]
+script = ExtResource("2_0xm2m")
+
+[node name="Camera3D" type="Camera3D" parent="Player/CamPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 4)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("BoxShape3D_0xm2m")
