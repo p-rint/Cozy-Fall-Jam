@@ -1,5 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://bblxwni0bdx7x"]
+[gd_scene load_steps=11 format=3 uid="uid://bblxwni0bdx7x"]
 
+[ext_resource type="Script" uid="uid://belk56tpd44ds" path="res://floor.gd" id="1_h2yge"]
 [ext_resource type="Script" uid="uid://cbuaqpujn36eq" path="res://player.gd" id="1_ig7tw"]
 [ext_resource type="Script" uid="uid://cy0jaqjeo6k57" path="res://cam_pivot.gd" id="2_0xm2m"]
 
@@ -15,11 +16,26 @@ background_mode = 2
 sky = SubResource("Sky_h2yge")
 tonemap_mode = 2
 
-[sub_resource type="BoxMesh" id="BoxMesh_0xm2m"]
-size = Vector3(1, 2, 1)
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_0xm2m"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_0xm2m"]
-size = Vector3(1, 2, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
+render_priority = 1
+transparency = 1
+no_depth_test = true
+shading_mode = 0
+albedo_color = Color(0.37602848, 0.37602848, 0.37602845, 1)
+stencil_mode = 3
+stencil_flags = 1
+stencil_compare = 5
+metadata/_stencil_owned = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2yge"]
+next_pass = SubResource("StandardMaterial3D_0xm2m")
+stencil_mode = 2
+stencil_flags = 2
+stencil_color = Color(0.37602848, 0.37602848, 0.37602845, 1)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_h2yge"]
 
 [node name="Main" type="Node3D"]
 
@@ -28,9 +44,15 @@ environment = SubResource("Environment_1bvp3")
 
 [node name="Floor" type="CSGCombiner3D" parent="."]
 use_collision = true
+script = ExtResource("1_h2yge")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="Floor"]
-size = Vector3(30, 1, 30)
+transform = Transform3D(30, 0, 0, 0, 10, 0, 0, 0, 30, 0, -5.505214, 0)
+
+[node name="Union" type="CSGBox3D" parent="Floor/CSGBox3D"]
+transform = Transform3D(0.9800001, 0, 0, 0, 0.98, 0, 0, 0, 0.9800001, 0, 0, 0)
+layers = 2
+operation = 2
 
 [node name="Player" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3216083, 2.210042, 0)
@@ -39,16 +61,18 @@ script = ExtResource("1_ig7tw")
 [node name="Character" type="Node3D" parent="Player"]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Player/Character"]
-mesh = SubResource("BoxMesh_0xm2m")
+mesh = SubResource("CapsuleMesh_0xm2m")
+surface_material_override/0 = SubResource("StandardMaterial3D_h2yge")
 
 [node name="CamPivot" type="Node3D" parent="Player"]
 script = ExtResource("2_0xm2m")
 
 [node name="Camera3D" type="Camera3D" parent="Player/CamPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 4)
+fov = 80.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
-shape = SubResource("BoxShape3D_0xm2m")
+shape = SubResource("CapsuleShape3D_h2yge")
 
 [node name="DrillRayCast" type="RayCast3D" parent="Player"]
 target_position = Vector3(0, 1.2, 0)

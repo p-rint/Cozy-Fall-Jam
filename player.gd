@@ -72,26 +72,33 @@ func _physics_process(delta: float) -> void:
 
 func stateMOVE():
 	addGravity()
-	
+	print("mov")
 	drillcast.hit_back_faces = true
 	drillcast.hit_from_inside = false
-	collision_layer = 1
-	collision_mask = 1
 	
-	drillcast.target_position.y = -1.5
+	set_collision_layer_value(1, true)
+	set_collision_mask_value(1, true)
+	set_collision_layer_value(2, false)
+	set_collision_mask_value(2, false)
+	
+	drillcast.target_position = velocity.normalized() * 1.5
 	
 	move()
 
 
 func stateDIG():
 	dig()
+	print("dig")
 	drillcast.hit_back_faces = false
-	drillcast.hit_from_inside = true
-	drillcast.target_position = velocity.normalized()
+	drillcast.hit_from_inside = false
+	drillcast.target_position = velocity.normalized() * 1.5
 	#print(drillcast.target_position)
 	
-	collision_layer = 2
-	collision_mask = 2
+	set_collision_layer_value(1, false)
+	set_collision_mask_value(1, false)
+	set_collision_layer_value(2, true)
+	set_collision_mask_value(2, true)
+	
 	
 	if drillcast.is_colliding() and dig_debounce.is_stopped():
 		print(drillcast.get_collider())
@@ -140,20 +147,30 @@ func runInputs() -> void:
 func drop():
 	if state == states.MOVE:
 		
-		if drillcast.is_colliding():
+		if drillcast.is_colliding(): #check in movement dir
 			
-			var toPoint = position - drillcast.get_collision_point()
-			velocity = -toPoint.normalized() * 40
+			startDig()
+			return
 			
-			state = states.DIGGING
-			isDropping = false
-			print("Start digging!")
-			dig_debounce.start(.3)
+		
+		drillcast.target_position = Vector3(0,-1.5,0)
+		drillcast.force_raycast_update()
+		
+		if drillcast.is_colliding(): #check downwards
+			startDig()
 		else:
 			isDropping = true
 			velocity.y = -10
 	else:
 		isDropping = false
+
+func startDig():
+	var toPoint = position - drillcast.get_collision_point()
+	velocity = -drillcast.get_collision_normal() * 40
+	state = states.DIGGING
+	isDropping = false
+	print("Start digging!")
+	dig_debounce.start(.3)
 
 func checkLife() -> void:
 	if position.y < -15:
