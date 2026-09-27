@@ -1,0 +1,33 @@
+[gd_scene load_steps=6 format=3 uid="uid://bb2e3wu7cn63i"]
+
+[ext_resource type="Script" uid="uid://tfvml8crf6k7" path="res://Scripts/goo.gd" id="1_dacqt"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3svq1"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_dacqt"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dacqt"]
+render_priority = 1
+transparency = 1
+no_depth_test = true
+shading_mode = 0
+stencil_mode = 3
+stencil_flags = 1
+stencil_compare = 5
+metadata/_stencil_owned = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sid4v"]
+next_pass = SubResource("StandardMaterial3D_dacqt")
+stencil_mode = 2
+stencil_flags = 2
+stencil_color = Color(1, 1, 1, 1)
+
+[node name="Goo" type="Area3D"]
+script = ExtResource("1_dacqt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_3svq1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_dacqt")
+surface_material_override/0 = SubResource("StandardMaterial3D_sid4v")

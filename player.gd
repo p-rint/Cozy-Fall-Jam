@@ -40,7 +40,7 @@ func move() -> void:
 		targetRot = atan2(-direction.x, -direction.z)
 	else:
 		if is_on_floor():
-			velocity = lerp(velocity, Vector3.ZERO + Vector3(0,velocity.y,0), 8 * dt)
+			velocity = lerp(velocity, Vector3.ZERO + Vector3(0,velocity.y,0), 10 * dt)
 
 func dig():
 	
@@ -51,20 +51,26 @@ func dig():
 		velocity = lerp(velocity, direction * DIGSPEED, dt * 8)
 		
 		targetRot = atan2(-direction.x, -direction.z)
-	else:	
-		velocity = lerp(velocity, Vector3.ZERO, 5 * dt)
+	else:
+		velocity = lerp(velocity, Vector3.ZERO, 9 * dt)
 	
 	velocity.y = lerp(velocity.y, yInpDir * YDIGSPEED, 3 * dt)
 		
 
 func _physics_process(delta: float) -> void:
+	
+	
 	dt = delta
 	camForw = flatten($CamPivot.basis.z)
 	runInputs()
 	
 	runCurState()
 	
+	
 	move_and_slide()
+	
+	if position.y < -3 and velocity.y < 0:
+		position.y = -3
 	checkLife()
 	
 
@@ -72,14 +78,13 @@ func _physics_process(delta: float) -> void:
 
 func stateMOVE():
 	addGravity()
-	print("mov")
 	drillcast.hit_back_faces = true
 	drillcast.hit_from_inside = false
 	
-	set_collision_layer_value(1, true)
-	set_collision_mask_value(1, true)
-	set_collision_layer_value(2, false)
-	set_collision_mask_value(2, false)
+	#set_collision_layer_value(1, true)
+	#set_collision_mask_value(1, true)
+	#set_collision_layer_value(2, false)
+	#set_collision_mask_value(2, false)
 	
 	drillcast.target_position = velocity.normalized() * 1.5
 	
@@ -88,16 +93,17 @@ func stateMOVE():
 
 func stateDIG():
 	dig()
-	print("dig")
 	drillcast.hit_back_faces = false
 	drillcast.hit_from_inside = false
-	drillcast.target_position = velocity.normalized() * 1.5
+	#drillcast.target_position = velocity.normalized() * 1.5
+	drillcast.target_position =Vector3(0,1.1,0)
+	
 	#print(drillcast.target_position)
 	
-	set_collision_layer_value(1, false)
-	set_collision_mask_value(1, false)
-	set_collision_layer_value(2, true)
-	set_collision_mask_value(2, true)
+	#set_collision_layer_value(1, false)
+	#set_collision_mask_value(1, false)
+	#set_collision_layer_value(2, true)
+	#set_collision_mask_value(2, true)
 	
 	
 	if drillcast.is_colliding() and dig_debounce.is_stopped():
@@ -131,8 +137,8 @@ func runInputs() -> void:
 	if Input.is_action_just_pressed("Jump") and is_on_floor():
 		jump()
 
-	if Input.is_action_just_pressed("Attack") and is_on_floor():
-		pass
+	if Input.is_action_just_pressed("Attack"):
+		attack()
 	
 	if Input.is_action_pressed("Dig") or Input.is_action_pressed("Shift"):
 		drop()
@@ -166,11 +172,26 @@ func drop():
 
 func startDig():
 	var toPoint = position - drillcast.get_collision_point()
+	position += -drillcast.get_collision_normal() * 2
 	velocity = -drillcast.get_collision_normal() * 40
 	state = states.DIGGING
 	isDropping = false
 	print("Start digging!")
 	dig_debounce.start(.3)
+
+
+
+
+func attack():
+	if state == states.DIGGING:
+		#print("wack")
+		$Character/Hitbox.on()
+	else:
+		pass
+		#print("play overground hit anim")
+		
+		
+
 
 func checkLife() -> void:
 	if position.y < -15:

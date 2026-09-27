@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://bblxwni0bdx7x"]
+[gd_scene load_steps=14 format=3 uid="uid://bblxwni0bdx7x"]
 
-[ext_resource type="Script" uid="uid://belk56tpd44ds" path="res://floor.gd" id="1_h2yge"]
 [ext_resource type="Script" uid="uid://cbuaqpujn36eq" path="res://player.gd" id="1_ig7tw"]
 [ext_resource type="Script" uid="uid://cy0jaqjeo6k57" path="res://cam_pivot.gd" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://c2kxheoq5j2s" path="res://Scripts/hitbox.gd" id="3_h2yge"]
+[ext_resource type="Script" uid="uid://ewdje6luf8qw" path="res://trees.gd" id="4_1bvp3"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0xm2m"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -15,6 +16,9 @@ sky_material = SubResource("ProceduralSkyMaterial_0xm2m")
 background_mode = 2
 sky = SubResource("Sky_h2yge")
 tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1bvp3"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_0xm2m"]
 
@@ -35,6 +39,8 @@ stencil_mode = 2
 stencil_flags = 2
 stencil_color = Color(0.37602848, 0.37602848, 0.37602845, 1)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_h2yge"]
+
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_h2yge"]
 
 [node name="Main" type="Node3D"]
@@ -44,15 +50,32 @@ environment = SubResource("Environment_1bvp3")
 
 [node name="Floor" type="CSGCombiner3D" parent="."]
 use_collision = true
-script = ExtResource("1_h2yge")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="Floor"]
-transform = Transform3D(30, 0, 0, 0, 10, 0, 0, 0, 30, 0, -5.505214, 0)
+transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 50, 0, -15, 0)
 
 [node name="Union" type="CSGBox3D" parent="Floor/CSGBox3D"]
 transform = Transform3D(0.9800001, 0, 0, 0, 0.98, 0, 0, 0, 0.9800001, 0, 0, 0)
-layers = 2
 operation = 2
+
+[node name="Walls" type="StaticBody3D" parent="Floor/CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29999998, 0)
+
+[node name="Wall1" type="CollisionShape3D" parent="Floor/CSGBox3D/Walls"]
+transform = Transform3D(0.099999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
+shape = SubResource("BoxShape3D_1bvp3")
+
+[node name="Wall3" type="CollisionShape3D" parent="Floor/CSGBox3D/Walls"]
+transform = Transform3D(0.099999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0, 0)
+shape = SubResource("BoxShape3D_1bvp3")
+
+[node name="Wall2" type="CollisionShape3D" parent="Floor/CSGBox3D/Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.1, 0, 0, 0.5)
+shape = SubResource("BoxShape3D_1bvp3")
+
+[node name="Wall4" type="CollisionShape3D" parent="Floor/CSGBox3D/Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.1, 0, 0, -0.5)
+shape = SubResource("BoxShape3D_1bvp3")
 
 [node name="Player" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3216083, 2.210042, 0)
@@ -63,6 +86,17 @@ script = ExtResource("1_ig7tw")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Player/Character"]
 mesh = SubResource("CapsuleMesh_0xm2m")
 surface_material_override/0 = SubResource("StandardMaterial3D_h2yge")
+
+[node name="Hitbox" type="Area3D" parent="Player/Character"]
+monitoring = false
+script = ExtResource("3_h2yge")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player/Character/Hitbox"]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, -2.1963105)
+shape = SubResource("BoxShape3D_h2yge")
+
+[node name="Timer" type="Timer" parent="Player/Character/Hitbox"]
+one_shot = true
 
 [node name="CamPivot" type="Node3D" parent="Player"]
 script = ExtResource("2_0xm2m")
@@ -82,3 +116,24 @@ hit_from_inside = true
 
 [node name="DigDebounce" type="Timer" parent="Player/Timers"]
 one_shot = true
+
+[node name="Trees" type="Node3D" parent="."]
+script = ExtResource("4_1bvp3")
+
+[node name="GameStuff" type="Node" parent="."]
+
+[node name="Timers" type="Node" parent="GameStuff"]
+
+[node name="TreeSpawnTime" type="Timer" parent="GameStuff/Timers"]
+autostart = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ProgressBar" type="ProgressBar" parent="CanvasLayer"]
+offset_right = 4.0
+offset_bottom = 27.0
+
+[connection signal="area_entered" from="Player/Character/Hitbox" to="Floor" method="_on_hitbox_area_entered"]
+[connection signal="area_entered" from="Player/Character/Hitbox" to="Player/Character/Hitbox" method="_on_area_entered"]
+[connection signal="timeout" from="Player/Character/Hitbox/Timer" to="Player/Character/Hitbox" method="_on_timer_timeout"]
+[connection signal="timeout" from="GameStuff/Timers/TreeSpawnTime" to="Trees" method="_on_tree_spawn_time_timeout"]
